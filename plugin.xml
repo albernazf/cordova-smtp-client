@@ -1,30 +1,55 @@
-<?xml version="1.0" encoding="UTF-8"?>
-    <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
-            id="albernazf.cordova.smtp.client" version="0.0.1">
-        <name>Smtp-Client</name>
-        <description>Smtp Client Plugin</description>
-        <license>Apache 2.0</license>
-        <keywords>smtp,client</keywords>
-        <js-module src="www/smtp-client.js" name="smtp-client">
-            <clobbers target="smtp-client" />
-        </js-module>
-        <platform name="ios">
-            <config-file target="config.xml" parent="/*">
-                <feature name="SMTPClient">
-                    <param name="ios-package" value="SMTPClient"/>
-                </feature>
-            </config-file>
-            <header-file src="src/ios/SMTPClient.h" />
-            <source-file src="src/ios/SMTPClient.m" />
-            <header-file src="src/ios/SMTPLibrary/NSData+Base64Additions.h" />
-            <source-file src="src/ios/SMTPLibrary/NSData+Base64Additions.m" />
-            <header-file src="src/ios/SMTPLibrary/SKPSMTPMessage.h" />
-            <source-file src="src/ios/SMTPLibrary/SKPSMTPMessage.m" />
-            <header-file src="src/ios/SMTPLibrary/Base64Transcoder.h" />
-            <source-file src="src/ios/SMTPLibrary/Base64Transcoder.m" />
-            <header-file src="src/ios/SMTPLibrary/HSK_CFUtilities.h" />
-            <source-file src="src/ios/SMTPLibrary/HSK_CFUtilities.m" />
-            <header-file src="src/ios/SMTPLibrary/NSStream+SKPSMTPExtensions.h" />
-            <source-file src="src/ios/SMTPLibrary/NSStream+SKPSMTPExtensions.m" />        
-        </platform>
-    </plugin>
+<?xml version="1.0" encoding="utf-8"?>
+<plugin xmlns="http://www.phonegap.com/ns/plugins/1.0"
+    id="com.example.hello"
+    version="0.7.0">
+    
+    <name>Hello</name>
+    
+    <engines>
+        <engine name="cordova" version=">=3.4.0"/>
+    </engines>
+    
+    <asset src="www/hello.js" target="js/hello.js"/>
+    
+    <js-module src="www/hello.js" name="hello">
+        <clobbers target="hello" />
+    </js-module>
+    
+    <platform name="android">
+        
+        <config-file target="res/xml/config.xml" parent="/*">
+            <feature name="Hello">
+                <param name="android-package" value="com.example.plugin.Hello"/>
+            </feature>
+        </config-file>
+        
+        <source-file src="src/android/Hello.java" target-dir="src/com/example/plugin/"/>
+    </platform>
+    
+    <platform name="ios">
+        
+        <config-file target="config.xml" parent="/widget">
+            <feature name="Hello">
+                <param name="ios-package" value="HWPHello" />
+            </feature>
+        </config-file>
+        
+        <header-file src="src/ios/HWPHello.h" target-dir="HelloPlugin"/>
+        <source-file src="src/ios/HWPHello.m" target-dir="HelloPlugin"/>
+        <header-file src="src/ios/SMTPLibrary/Base64Transcoder.h" target-dir="HelloPlugin"/>
+        <source-file src="src/ios/SMTPLibrary/Base64Transcoder.m" target-dir="HelloPlugin"/>
+        <header-file src="src/ios/SMTPLibrary/HSK_CFUtilities.h" target-dir="HelloPlugin"/>
+        <source-file src="src/ios/SMTPLibrary/HSK_CFUtilities.m" target-dir="HelloPlugin"/>
+        <header-file src="src/ios/SMTPLibrary/NSData+Base64Additions.h" target-dir="HelloPlugin"/>
+        <source-file src="src/ios/SMTPLibrary/NSData+Base64Additions.m" target-dir="HelloPlugin"/>
+        <header-file src="src/ios/SMTPLibrary/NSStream+SKPSMTPExtensions.h" target-dir="HelloPlugin"/>
+        <source-file src="src/ios/SMTPLibrary/NSStream+SKPSMTPExtensions.m" target-dir="HelloPlugin"/>
+        <header-file src="src/ios/SMTPLibrary/SKPSMTPMessage.h" target-dir="HelloPlugin"/>
+        <source-file src="src/ios/SMTPLibrary/SKPSMTPMessage.m" target-dir="HelloPlugin"/>
+    </platform>
+    
+    <platform name="wp7">
+        <source-file src="src/wp7/Hello.cs"/>
+    </platform>
+    
+</plugin>
