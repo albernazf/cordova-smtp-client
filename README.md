@@ -1,49 +1,49 @@
-# Cordova Hello World Plugin
+# Cordova SMTP Client
 
-Simple plugin that returns your string prefixed with hello.
+Simple pluging that sends an email with or without attachments without prompt the user.
 
-Greeting a user with "Hello, world" is something that could be done in JavaScript. This plugin provides a simple example demonstrating how Cordova plugins work.
+## ps. IOS is working Android is under development
 
 ## Using
-Clone the plugin
 
-    $ git clone https://github.com/don/cordova-plugin-hello.git
+Install the plugin using your any plugman compatible cli
 
-Create a new Cordova Project
+    $ cordova plugin add https://github.com/albernazf/cordova-smtp-client.git
 
-    $ cordova create hello com.example.helloapp Hello
-    
-Install the plugin
-
-    $ cd hello
-    $ cordova plugin add ../cordova-plugin-hello
-    
-
-Edit `www/js/index.js` and add the following code inside `onDeviceReady`
-
-```js
-    var success = function(message) {
-        alert(message);
-    }
-
-    var failure = function() {
-        alert("Error calling Hello Plugin");
-    }
-
-    hello.greet("World", success, failure);
-```
-
-Install iOS or Android platform
+Install iOS and/or Android platform
 
     cordova platform add ios
-    cordova platform add android
-    
-Run the code
+    cordova platform add android    
 
-    cordova run 
+Under the plugins / com.cordova.smtp.client / www folder you will find a Typescript file to help you use the plugin (not mandatory) MailSettings.ts, if you are not using typescript there is also a javascript version of it under the same folder MailSettings.js.
 
-## More Info
+On your javascript call use a code similar to this.
 
-For more information on setting up Cordova see [the documentation](http://cordova.apache.org/docs/en/4.0.0/guide_cli_index.md.html#The%20Command-Line%20Interface)
+	var mailSettings = {
+	    emailFrom: "emailFrom@domain.com",
+	    emailTo: "emailTo@domain.com",
+	    smtp: "smtp-mail.domain.com",
+	    smtpUserName: "authuser@domain.com",
+	    smtpPassword: "password",
+	    attachmentsInBase64Format: ["attchament1_in_base64_formant","attchament2_in_base64_formant"], // optional
+	    subject: "email subject",
+		textBody: "write something within the boddy of the email"
+	};
+	            
+	var success = function(message) {
+		alert(message);
+	}
+	
+	var failure = function(message) {
+		alert("Error sending the email");
+	}			
+				
+	smtpClient.sendMail(mailSettings, success, failure);
 
-For more info on plugins see the [Plugin Development Guide](http://cordova.apache.org/docs/en/4.0.0/guide_hybrid_plugins_index.md.html#Plugin%20Development%20Guide)
+The return object "message" has the following structure
+
+	{
+	    success : bool,
+		errorCode : int,
+		errorMessage : string	    
+	}
