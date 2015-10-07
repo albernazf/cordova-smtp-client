@@ -159,7 +159,7 @@ NSString *kSKPSMTPPartContentTransferEncodingKey = @"kSKPSMTPPartContentTransfer
 {
     NSLog(@"*** stopping watchdog ***");
     [self.watchdogTimer invalidate];
-    self.watchdogTimer = nil;
+    //self.watchdogTimer = nil;
 }
 
 
