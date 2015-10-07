@@ -21,6 +21,7 @@
     NSString *smtpServer = [json objectForKey:@"smtp"];
     NSString *smtpUser = [json objectForKey:@"smtpUserName"];
     NSString *smtpPassword = [json objectForKey:@"smtpPassword"];
+	NSString *textBody = [json objectForKey:@"textBody"];
     
     SKPSMTPMessage *message = [[SKPSMTPMessage alloc] init];
     
@@ -53,23 +54,47 @@
     
 	
     NSDictionary *plainPart = [NSDictionary dictionaryWithObjectsAndKeys:@"text/plain; charset=UTF-8",kSKPSMTPPartContentTypeKey,
-                               @"Message from Fernando.",kSKPSMTPPartMessageKey,@"8bit",kSKPSMTPPartContentTransferEncodingKey,nil];
+                               textBody,kSKPSMTPPartMessageKey,@"8bit",kSKPSMTPPartContentTransferEncodingKey,nil];
     
     NSMutableArray *partsToSend = [NSMutableArray arrayWithObjects:plainPart,nil];
     
     NSArray *files = [json objectForKey:@"attachmentsInBase64Format"];
+
+    NSError *error = nil;
+	
+	NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:@"\/(.*)\;" options:NSRegularExpressionCaseInsensitive error:&error];
+
     
     for (NSString *file in files) {
 		
-	    NSMutableString *attachedFilename = [NSMutableString stringWithString:@"text/directory;\r\n\tx-unix-mode=0644;\r\n\tname=\""] ;
-		[attachedFilename appendString:@"test.jpg"];
+       	NSArray* imageDataSplitByComma = [file componentsSeparatedByString:@","];
 	
-		NSData *fileData = [NSData dataFromBase64String:file];
-	 
-	    NSDictionary *filePart = [NSDictionary dictionaryWithObjectsAndKeys:attachedFilename,        kSKPSMTPPartContentTypeKey,
-	    @"attachment;\r\n\tfilename=\"test25.jpg\"",kSKPSMTPPartContentDispositionKey,[fileData encodeBase64ForData],kSKPSMTPPartMessageKey,@"base64",kSKPSMTPPartContentTransferEncodingKey,nil];
-     
-	    [partsToSend addObject:filePart];
+		NSTextCheckingResult *match = [regex firstMatchInString:file
+		                                     options:0
+		                                     range:NSMakeRange(0, [file length])];
+        
+		NSMutableString *fileName = [NSMutableString stringWithString:@"attachment."];
+		if (match) {
+		    [fileName appendString:[file substringWithRange:[match rangeAtIndex:1]]];
+		}
+		else{
+		    [fileName appendString:@"jpg"];
+		}
+        
+		NSMutableString *attachedFilename = [NSMutableString stringWithString:@"text/directory;\r\n\tx-unix-mode=0644;\r\n\tname=\""] ;
+		[attachedFilename appendString:fileName];
+        
+		NSData *fileData = [NSData dataFromBase64String:[imageDataSplitByComma objectAtIndex:1]];
+        
+		NSMutableString *attachementString = [NSMutableString stringWithString:@"attachment;\r\n\tfilename=\""];
+		[attachementString appendString:fileName];
+		[attachementString appendString:@"\""];
+
+        
+		NSDictionary *filePart = [NSDictionary dictionaryWithObjectsAndKeys:attachedFilename,        kSKPSMTPPartContentTypeKey,
+		                          attachementString,kSKPSMTPPartContentDispositionKey,[fileData encodeBase64ForData],kSKPSMTPPartMessageKey,@"base64",kSKPSMTPPartContentTransferEncodingKey,nil];
+        
+		[partsToSend addObject:filePart];
     }
     
     message.parts = partsToSend;
