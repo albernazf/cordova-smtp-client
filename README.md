@@ -4,14 +4,14 @@ Simple pluging that sends an email with or without attachments without prompt th
 
 ## Using
 
-Install the plugin using your any plugman compatible cli
-
-    $ cordova plugin add https://github.com/albernazf/cordova-smtp-client.git
-
 Install iOS and/or Android platform
 
     cordova platform add ios
-    cordova platform add android    
+    cordova platform add android
+
+Install the plugin using your any plugman compatible cli
+
+    $ cordova plugin add https://github.com/albernazf/cordova-smtp-client.git
 
 Under the plugins / com.cordova.smtp.client / www folder you will find a Typescript file to help you use the plugin (not mandatory) MailSettings.ts, if you are not using typescript there is also a javascript version of it under the same folder MailSettings.js.
 
