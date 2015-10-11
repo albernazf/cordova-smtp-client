@@ -2,8 +2,6 @@
 
 Simple pluging that sends an email with or without attachments without prompt the user.
 
-## ps. IOS is working Android is under development
-
 ## Using
 
 Install the plugin using your any plugman compatible cli
@@ -25,7 +23,7 @@ On your javascript call use a code similar to this.
 	    smtp: "smtp-mail.domain.com",
 	    smtpUserName: "authuser@domain.com",
 	    smtpPassword: "password",
-	    attachmentsInBase64Format: ["attchament1_in_base64_formant","attchament2_in_base64_formant"], // optional
+	    attachments: ["attchament1","attchament2"],
 	    subject: "email subject",
 		textBody: "write something within the boddy of the email"
 	};
@@ -40,6 +38,8 @@ On your javascript call use a code similar to this.
 				
 	smtpClient.sendMail(mailSettings, success, failure);
 
+The attachments is an array of strings where when using IOS the files needs to be in DATA_URI format and when Android should be the path of the file.
+	
 The return object "message" has the following structure
 
 	{
