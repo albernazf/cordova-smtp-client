@@ -8,7 +8,7 @@ class MailSettings {
     public smtpUserName: string;
     public smtpPassword: string;
     public smtpRequiresAuth: boolean;
-    public attachmentsInBase64Format: Array<string>;
+    public attachments: Array<string>;
  
     constructor(mailSettings: any = undefined) {
         if (mailSettings != undefined) {
@@ -18,7 +18,7 @@ class MailSettings {
             this.port = mailSettings.port;
             this.smtpUserName = mailSettings.smtpUserName;
             this.smtpPassword = mailSettings.smtpPassword;
-            this.attachmentsInBase64Format = mailSettings.attachmentsInBase64Format;
+            this.attachments = mailSettings.attachments;
             this.subject = mailSettings.subject;
             this.textBody = mailSettings.textBody;
         }

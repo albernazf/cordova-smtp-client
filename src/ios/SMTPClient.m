@@ -1,151 +1,74 @@
-#import "SMTPClient.h"
-#import "SKPSMTPMessage.h"
-#import "NSData+Base64Additions.h"
+package com.cordova.smtp.client;
 
-@implementation SMTPClient
+import android.os.Environment;
 
-- (void)cordovaSendMail:(CDVInvokedUrlCommand*)command
-{
-	self.pluginCallbackId = command.callbackId;
- 
-    NSString *args = [command.arguments objectAtIndex:0];
-    NSData *objectData = [args dataUsingEncoding:NSUTF8StringEncoding];
-	NSError *jsonError;
-    NSDictionary *json = [NSJSONSerialization JSONObjectWithData:objectData
-                          options:NSJSONReadingMutableContainers
-                          error:&jsonError];
+import org.apache.cordova.CallbackContext;
+import org.apache.cordova.CordovaPlugin;
+import org.json.JSONObject;
+import org.json.JSONArray;
+import org.json.JSONException;
 
-    NSString *from = [json objectForKey:@"emailFrom"];
-    NSString *to = [json objectForKey:@"emailTo"];
-	NSString *bcc = [json objectForKey:@"bcc"];
-    NSString *smtpServer = [json objectForKey:@"smtp"];
-    NSString *smtpUser = [json objectForKey:@"smtpUserName"];
-    NSString *smtpPassword = [json objectForKey:@"smtpPassword"];
-	NSString *textBody = [json objectForKey:@"textBody"];
-    
-    SKPSMTPMessage *message = [[SKPSMTPMessage alloc] init];
-    
-    message.fromEmail = from;
-    message.toEmail = to;
-	if (bcc == (id)[NSNull null] || bcc.length == 0 ){
-		message.bccEmail = nil;
-	}
-	else{
-		message.bccEmail = bcc;		
-	}
+public class SMTPClient extends CordovaPlugin {
+    public final String ACTION_SEND_EMAIL = "cordovaSendMail";
 
-    message.relayHost = smtpServer;
-    //message.requiresAuth = [json objectForKey:@"smtpRequiresAuth"];
-	message.requiresAuth = true;
-    
-    if (message.requiresAuth) {
-        message.login = smtpUser;
-        message.pass = smtpPassword;
+    @Override
+    public boolean execute(String action, JSONArray args, final CallbackContext callbackContext) throws JSONException {
+        if (action.equals(ACTION_SEND_EMAIL)) {
+
+            final String jsonObject = args.getString(0);
+            cordova.getThreadPool().execute(new Runnable() {
+                public void run() {
+                    try {
+                        JSONObject json = new JSONObject(jsonObject);
+
+                        sendEmailViaGmail(json);
+                        callbackContext.success();
+                    } catch (JSONException ex) {
+                        callbackContext.error(ex.getMessage());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+            return true;
+
+        }
+        return false;
     }
-    
-    message.wantsSecure = true; // smtp.gmail.com doesn't work without TLS!
-    
-    message.subject = [json objectForKey:@"subject"];
-    
-    // Only do this for self-signed certs, test only
-    // testMsg.validateSSLChain = NO;
 
-    message.delegate = self;
-    
-	
-    NSDictionary *plainPart = [NSDictionary dictionaryWithObjectsAndKeys:@"text/plain; charset=UTF-8",kSKPSMTPPartContentTypeKey,
-                               textBody,kSKPSMTPPartMessageKey,@"8bit",kSKPSMTPPartContentTransferEncodingKey,nil];
-    
-    NSMutableArray *partsToSend = [NSMutableArray arrayWithObjects:plainPart,nil];
-    
-    NSArray *files = [json objectForKey:@"attachmentsInBase64Format"];
+    private final void sendEmailViaGmail(JSONObject json) throws Exception {
 
-    NSError *error = nil;
-	
-	NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:@"\/(.*)\;" options:NSRegularExpressionCaseInsensitive error:&error];
+        Mail m = new Mail(json.getString("smtpUserName"), json.getString("smtpPassword"));
+        String[] toArr = {json.getString("emailTo")};
+        m.set_to(toArr);
+        m.set_host(json.getString("smtp"));
+        m.set_from(json.getString("emailFrom"));
+        m.set_body(json.getString("textBody"));
+        m.set_subject(json.getString("subject"));
+        m.set_auth(json.getBoolean("auth"));
+        m.set_ssl(json.getBoolean("ssl"));
+        if(json.has("sport")){
+            m.set_sport(json.getInt("sport"));
+        }
 
+        if(json.has("port")){
+            m.set_port(json.getInt("port"));
+        }
     
-    for (NSString *file in files) {
-		
-       	NSArray* imageDataSplitByComma = [file componentsSeparatedByString:@","];
-	
-		NSTextCheckingResult *match = [regex firstMatchInString:file
-		                                     options:0
-		                                     range:NSMakeRange(0, [file length])];
-        
-		NSMutableString *fileName = [NSMutableString stringWithString:@"attachment."];
-		if (match) {
-		    [fileName appendString:[file substringWithRange:[match rangeAtIndex:1]]];
-		}
-		else{
-		    [fileName appendString:@"jpg"];
-		}
-        
-		NSMutableString *attachedFilename = [NSMutableString stringWithString:@"text/directory;\r\n\tx-unix-mode=0644;\r\n\tname=\""] ;
-		[attachedFilename appendString:fileName];
-        
-		NSData *fileData = [NSData dataFromBase64String:[imageDataSplitByComma objectAtIndex:1]];
-        
-		NSMutableString *attachementString = [NSMutableString stringWithString:@"attachment;\r\n\tfilename=\""];
-		[attachementString appendString:fileName];
-		[attachementString appendString:@"\""];
+        JSONArray attachments = json.getJSONArray("attachments");
+        if (attachments != null) {
+            for (int i = 0; i < attachments.length(); i++) {
+                String fileFullName = attachments.getString(i);
+                fileFullName = "file:/storage/sdcard/Android/data/com.yourname.workshop/cache/modified.jpg";
+                if (fileFullName.contains(":")) {
+                    fileFullName = fileFullName.split(":")[1];
+                }
+                m.addAttachment(fileFullName);
+            }
+        }
 
-        
-		NSDictionary *filePart = [NSDictionary dictionaryWithObjectsAndKeys:attachedFilename,        kSKPSMTPPartContentTypeKey,
-		                          attachementString,kSKPSMTPPartContentDispositionKey,[fileData encodeBase64ForData],kSKPSMTPPartMessageKey,@"base64",kSKPSMTPPartContentTransferEncodingKey,nil];
-        
-		[partsToSend addObject:filePart];
+        boolean sendFlag = m.send();
+
     }
-    
-    message.parts = partsToSend;
 
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-       [message send];
-    });
 }
-
-- (void)messageSent:(SKPSMTPMessage *)message
-{
-    //NSLog(@"delegate - message sent");
-	
-    NSDictionary *jsonObj = [ [NSDictionary alloc]
-                             initWithObjectsAndKeys :
-                             @"", @"errorMessage",
-                             @"true", @"success",
-							 @"0", @"errorCode",
-                             nil ];
-	
-	CDVPluginResult *pluginResult = [ CDVPluginResult
-	                                     resultWithStatus    : CDVCommandStatus_OK
-	                                     messageAsString : jsonObj
-	                                     ];
-	
-	[self.commandDelegate sendPluginResult:pluginResult callbackId:self.pluginCallbackId];
-}
-
-- (void)messageFailed:(SKPSMTPMessage *)message error:(NSError *)error
-{
-    
-    NSString* errorMessage = [NSString stringWithFormat:@"Darn! Error!\n%i: %@\n%@", [error code], [error localizedDescription], [error localizedRecoverySuggestion]];
-    
-    
-    NSDictionary *jsonObj = [ [NSDictionary alloc]
-                              initWithObjectsAndKeys :
-                              errorMessage , @"errorMessage",
-                              @"false", @"success",
-                              [error code],@"errorCode",
-                              nil ];
-	CDVPluginResult *pluginResult = [ CDVPluginResult
-	                                  resultWithStatus : CDVCommandStatus_OK
-	                                  messageAsString : jsonObj];			  
-	
-	[self.commandDelegate sendPluginResult:pluginResult callbackId:self.pluginCallbackId];
-	
-    //self.textView.text = [NSString stringWithFormat:@"Darn! Error: %@, %@", [error code], [error localizedDescription]];
-    //self.textView.text = [NSString stringWithFormat:@"Darn! Error!\n%i: %@\n%@", [error code], [error localizedDescription], [error localizedRecoverySuggestion]];
-    //[message release];
-    
-    //NSLog(@"delegate - error(%d): %@", [error code], [error localizedDescription]);
-}
-
-@end

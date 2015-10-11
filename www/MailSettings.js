@@ -8,7 +8,7 @@ var MailSettings = (function () {
             this.port = mailSettings.port;
             this.smtpUserName = mailSettings.smtpUserName;
             this.smtpPassword = mailSettings.smtpPassword;
-            this.attachmentsInBase64Format = mailSettings.attachmentsInBase64Format;
+            this.attachments = mailSettings.attachments;
             this.subject = mailSettings.subject;
             this.textBody = mailSettings.textBody;
         }
